@@ -25,7 +25,7 @@ def newest() -> str | None:
     return target
 
 
-def getexename(filename):
+def getexename(filename: str) -> str:
     if filename.endswith(".cpp"):
         filename = filename[:-4]
     exefile = os.path.abspath(filename + ".exe")
@@ -71,7 +71,7 @@ def docompile(cmd: str, dorun: bool = True, force: bool = False, gdb: bool = Fal
     return True
 
 
-def runwithfile(file: str, infile: str | None = None, outfile: str | None = None):
+def runwithfile(file: str, infile: str | None = None, outfile: str | None = None) -> None:
     sus = docompile(file, False)
     if not sus:
         return
@@ -99,7 +99,7 @@ def runwithfile(file: str, infile: str | None = None, outfile: str | None = None
     module.tmpr()
 
 
-def solve(args):
+def solve(args: list[str]) -> bool:
     match args[0]:
         case "c":
             if len(args) < 2:

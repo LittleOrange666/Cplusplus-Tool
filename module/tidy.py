@@ -2,11 +2,11 @@ import os
 import shutil
 
 
-def tidy(args):
+def tidy(args: list[str]) -> None:
     match args[0]:
         case "fold":
             if len(args) < 2:
-                print("Usage: tidy fold <prefix>")
+                print("Usage: cpt tidy fold <prefix>")
             else:
                 if not os.path.isdir(args[1]):
                     os.mkdir(args[1])
@@ -66,14 +66,14 @@ def tidy(args):
                         shutil.move(os.path.join(k, filename), filename)
                     os.rmdir(k)
         case _:
-            print(f"Usage: tidy [fold|unfold|foldaz|foldAZ]")
+            print(f"Usage: cpt tidy [fold|unfold|foldaz|foldAZ]")
 
 
-def solve(args):
+def solve(args) -> bool:
     match args[0]:
         case "tidy":
             if len(args) == 1:
-                print("Usage: tidy [fold|unfold|foldaz]")
+                print("Usage: cpt tidy [fold|unfold|foldaz]")
             else:
                 tidy(args[1:])
         case _:

@@ -6,8 +6,8 @@ import pyzipper
 import module
 
 
-def mhc(cmd: str, argv: str):
-    exefile = module.base.getexename(cmd)
+def mhc(target: str, argv: str) -> None:
+    exefile = module.base.getexename(target)
     targetfolder = os.getcwd()
     targetfile = None
     if argv:
@@ -18,13 +18,14 @@ def mhc(cmd: str, argv: str):
         else:
             print(f"Invalid file {argv!r}")
             return
-    sus = module.base.docompile(cmd, False)
+    sus = module.base.docompile(target, False)
     if not sus:
         return
+    print(f"start runnning {os.path.abspath(target)}")
     proc = subprocess.Popen([exefile], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
     if targetfile is None:
         files = os.listdir(targetfolder)
-        files = [f for f in files if os.path.isfile(f)]
+        files = [f for f in files if os.path.isfile(f) and not f.endswith(".cpp")]
         for i, f in enumerate(files):
             iszip = pyzipper.is_zipfile(os.path.join(targetfolder, f))
             print(f"{i + 1}.{'(zipfile)' if iszip else ''}{f}")
@@ -81,7 +82,7 @@ def mhc(cmd: str, argv: str):
     module.tmpr()
 
 
-def solve(args):
+def solve(args: list[str]) -> bool:
     match args[0]:
         case "mhc":
             target = module.base.newest()

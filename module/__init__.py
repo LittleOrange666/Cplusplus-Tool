@@ -29,7 +29,6 @@ os.environ["PYTHONUTF8"] = "1"
 config = JsonConfig(os.path.join(os.path.dirname(__file__), "config.json"))
 
 cpp_versions = {"11": "11", "14": "14", "17": "17", "20": "2a"}
-running = True
 eofflag = "\\eof"
 encoding = "utf8"
 tmps = []

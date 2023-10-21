@@ -4,7 +4,7 @@ import shutil
 import module
 
 
-def solve(args):
+def solve(args: list[str]) -> bool:
     match args[0]:
         case "format":
             if len(args) == 1:
@@ -29,9 +29,9 @@ def solve(args):
                 target = module.base.newest()
             else:
                 target = args[1]
-            if not os.path.isfile(target):
-                print("Invalid path")
-            elif os.path.getsize(target) > 0:
+            if not target.endswith(".cpp"):
+                target += ".cpp"
+            if os.path.isfile(target) and os.path.getsize(target) > 0:
                 print(f"{target!r} is not a empty file")
             else:
                 with open(os.path.join(os.path.dirname(__file__), "template.cpp")) as f:
