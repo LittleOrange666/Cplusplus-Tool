@@ -35,6 +35,8 @@ def cmds(args: list[str]):
                 return
             if module.code.solve(args):
                 return
+            if module.auto.solve(args):
+                return
             print(f"Unknow command {args[0]!r}")
 
 

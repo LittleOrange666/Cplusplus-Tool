@@ -11,6 +11,7 @@ def mhc(target: str, argv: str) -> None:
     targetfolder = os.getcwd()
     targetfile = None
     if argv:
+        argv = os.path.abspath(argv)
         if os.path.isdir(argv):
             targetfolder = argv
         elif os.path.isfile(argv):
@@ -23,9 +24,11 @@ def mhc(target: str, argv: str) -> None:
         return
     print(f"start runnning {os.path.abspath(target)}")
     proc = subprocess.Popen([exefile], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+    outfile = input("Output file:")
+    outfile = os.path.join(targetfolder, outfile)
     if targetfile is None:
         files = os.listdir(targetfolder)
-        files = [f for f in files if os.path.isfile(f) and not f.endswith(".cpp")]
+        files = [f for f in files if os.path.isfile(os.path.join(targetfolder,f)) and not f.endswith(".cpp")]
         for i, f in enumerate(files):
             iszip = pyzipper.is_zipfile(os.path.join(targetfolder, f))
             print(f"{i + 1}.{'(zipfile)' if iszip else ''}{f}")
@@ -74,7 +77,6 @@ def mhc(target: str, argv: str) -> None:
         send_data = f.read()
     if not send_data.endswith(b"\n"):
         send_data += b"\n"
-    outfile = input("Output file:")
     outs, errs = proc.communicate(send_data)
     with open(outfile, "wb") as f:
         f.write(outs)

@@ -5,6 +5,7 @@ import module.base as base
 import module.special as special
 import module.tidy as tidy
 import module.code as code
+import module.auto as auto
 
 
 class JsonConfig:
