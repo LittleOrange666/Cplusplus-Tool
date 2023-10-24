@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 
 import module
@@ -24,7 +25,7 @@ def auto(args: list[str]) -> None:
                 print("Cannot connect to listener")
                 return
             data = json.loads(response.text)
-            print(f"start testing for {data['Title']!r}")
+            print(f"start testing '{os.path.abspath(target)}' with {data['Title']!r}")
             tests = data['Data']
             tl = data["TimeLimit"]
             ac = 0

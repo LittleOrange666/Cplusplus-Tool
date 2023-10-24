@@ -59,6 +59,7 @@ P.S.建立檔案也是一種編輯
 首先，雙擊listener.pyw或listener.bat可開啟接收器\
 發射部分需要瀏覽器能在開啟題目時\
 向"http://127.0.0.1:5555/writetestcase" 自動發指定格式的POST REQUEST\
+"http://127.0.0.1:5555/presenttestcase" 也是另一個選擇\
 這部分我在listeners資料夾中提供了一些Tempermonkey腳本的範例\
 如有缺漏可自行嘗試編寫
 
@@ -110,6 +111,8 @@ C++版本，可以是11,14,17,20\
 用clang-format整理最新程式
 3. usaco (程式檔) {名稱}\
 使main裡的cin/cout在OJ上指向"名稱.in"/"名稱.out"
+4. import 名稱\
+載入import裡的範例
 
 ### 檔案整理
 

@@ -26,6 +26,7 @@ def mhc(target: str, argv: str) -> None:
     proc = subprocess.Popen([exefile], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
     outfile = input("Output file:")
     outfile = os.path.join(targetfolder, outfile)
+    send_data = None
     if targetfile is None:
         files = os.listdir(targetfolder)
         files = [f for f in files if os.path.isfile(os.path.join(targetfolder,f)) and not f.endswith(".cpp")]
@@ -59,7 +60,6 @@ def mhc(target: str, argv: str) -> None:
                             choicefile = files[choice - 1]
                             break
                     print(f"Invalid choice {choice}")
-            tpf = module.tmpf()
             try:
                 data = zip_file.read(choicefile)
             except RuntimeError:
@@ -70,18 +70,16 @@ def mhc(target: str, argv: str) -> None:
                         break
                     except RuntimeError:
                         print("unzip faild")
-            with open(tpf, "wb") as f:
-                f.write(data)
-            targetfile = tpf
-    with open(targetfile, "rb") as f:
-        send_data = f.read()
+            send_data = data
+    if send_data is None:
+        with open(targetfile, "rb") as f:
+            send_data = f.read()
     if not send_data.endswith(b"\n"):
         send_data += b"\n"
     outs, errs = proc.communicate(send_data)
     with open(outfile, "wb") as f:
         f.write(outs)
     print(f"program exited with Code {proc.returncode}")
-    module.tmpr()
 
 
 def solve(args: list[str]) -> bool:
