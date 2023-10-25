@@ -67,17 +67,31 @@ def auto(args: list[str]) -> None:
                                 ac += 1
                 except subprocess.TimeoutExpired:
                     print("Time Limit Exceed")
+                proc.kill()
             if testing:
                 print(f"\ntest completed")
             else:
                 print(f"\ntest completed, {ac}/{len(tests)} Accepted")
+        case "submit":
+            target = module.base.newest()
+            if target is None:
+                return
+            with open(target, "r") as f:
+                content = f.read()
+            response = requests.post(url+"/submit", {"content": content}, timeout=1)
+            if response.status_code == 200:
+                print(f"Submit Success for {response.text!r}")
+            else:
+                print(f"Submit Failed: error {response.status_code}")
+        case _:
+            print("Usage: cpt auto [test|judge|submit]")
 
 
 def solve(args) -> bool:
     match args[0]:
         case "auto":
             if len(args) == 1:
-                print("Usage: cpt auto [test|judge]")
+                print("Usage: cpt auto [test|judge|submit]")
             else:
                 auto(args[1:])
         case _:

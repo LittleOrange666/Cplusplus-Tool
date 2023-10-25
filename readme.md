@@ -60,6 +60,7 @@ P.S.建立檔案也是一種編輯
 發射部分需要瀏覽器能在開啟題目時\
 向"http://127.0.0.1:5555/writetestcase" 自動發指定格式的POST REQUEST\
 "http://127.0.0.1:5555/presenttestcase" 也是另一個選擇\
+還可以用"/waitsubmit"做自動提交\
 這部分我在listeners資料夾中提供了一些Tempermonkey腳本的範例\
 如有缺漏可自行嘗試編寫
 
@@ -135,6 +136,8 @@ foldAZ則是以A~Z/0~9
 2. judge\
 自動全部執行過一遍並顯示評測結果\
 非嚴格檢查，但若答案不唯一建議用test再自己看
+3. submit
+提交目前程式碼
 
 ### 其他
 

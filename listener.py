@@ -9,6 +9,7 @@ from flask_cors import cross_origin
 app = Flask(__name__, template_folder="./")
 
 testcase = {"Title": "Nothing", "Data": [], "TimeLimit": 1.0}
+submission = ""
 
 
 @app.route('/test', methods=['GET', 'POST'])
@@ -50,7 +51,6 @@ def present_testcase():
         return Response("argument missing: type", status=400)
     if "timelimit" not in request.form:
         return Response("argument missing: timelimit", status=400)
-    print(request.form["type"])
     data = []
     match request.form["type"]:
         case "zip":
@@ -76,6 +76,7 @@ def present_testcase():
                             pairs.append((file, di[o]))
                             break
                         i = j + 1
+            pairs.sort(key=lambda x: x[0].filename)
             for a, b in pairs:
                 data.append([zip_file.read(a).decode("utf8"), zip_file.read(b).decode("utf8")])
         case _:
@@ -89,13 +90,33 @@ def present_testcase():
 @app.route('/readtestcase', methods=['GET', 'POST'])
 @cross_origin()
 def read_testcase():
-    global testcase
     return jsonify(**testcase)
 
 
 @app.route('/inputtestcase', methods=['GET'])
 def input_testcase():
     return render_template('input_testcase.html')
+
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    global submission
+    submission = request.form["content"]
+    return Response(testcase["Title"], status=200)
+
+
+@app.route('/waitsubmit', methods=['POST'])
+@cross_origin()
+def waitsubmit():
+    global submission
+    if "title" not in request.form:
+        return Response("argument missing: title", status=400)
+    if request.form["title"] == testcase["Title"]:
+        ret = Response(submission, status=200)
+        submission = ""
+        ret.mimetype = "text/plain"
+        return ret
+    return Response(status=204)
 
 
 if __name__ == '__main__':
