@@ -8,11 +8,13 @@ defines_prefix = ("#", "using", "const")
 
 
 def doimport(target, name):
-    if not os.path.isfile(os.path.join(imports, name + ".cpp")):
+    source_file = os.path.join(imports, name + ".cpp")
+    if not os.path.isfile(source_file):
         print(f"Library name {name!r} does not exist")
+        return
     with open(target, "r") as f:
         source = f.read().split("\n")
-    with open(os.path.join(imports, name + ".cpp"), "r") as f:
+    with open(source_file, "r") as f:
         lib = f.read().split("\n")
     src_def = [s.replace(" ", "") for s in source if any(s.startswith(k) for k in defines_prefix)]
     lib_def = [s for s in lib if any(s.startswith(k) for k in defines_prefix)]

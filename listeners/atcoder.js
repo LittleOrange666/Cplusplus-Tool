@@ -12,6 +12,12 @@
 (function() {
     'use strict';
     const url = "http://127.0.0.1:5555/writetestcase"
+    function inputevt(o,value){
+        let evt = document.createEvent('HTMLEvents');
+        evt.initEvent('input', true, true);
+        o.value = value;
+        o.dispatchEvent(evt);
+    }
     let a = location.pathname.split("/");
     if (a.length>=2&&a[a.length-2]=="tasks"&&a[a.length-1]){
         let d = [];
@@ -23,7 +29,8 @@
             }
         }
         let data = new URLSearchParams();
-        data.append("title","AtCoder: "+document.querySelector(".h2").childNodes[0].textContent.trim());
+        var title = "AtCoder: "+document.querySelector(".h2").childNodes[0].textContent.trim();
+        data.append("title",title);
         let s = document.querySelector(".col-sm-12 p").textContent.trim();
         data.append("timelimit",s.substring(s.indexOf(":")+1,s.indexOf("sec")).trim());
         let tests = [];
@@ -37,6 +44,29 @@
             headers: new Headers({
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             }),
-        })
+        }).then((response) => {
+            console.log(response);
+            var it;
+            it = window.setInterval(function(){
+                let data = new URLSearchParams();
+                data.append("title",title);
+                fetch("http://127.0.0.1:5555/waitsubmit", {
+                    method: "POST",
+                    body: data,
+                    headers: new Headers({
+                        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    }),
+                }).then((submission)=>{
+                    submission.text().then(function (text) {
+                        if (text){
+                            inputevt(document.querySelector("textarea.ace_text-input"),text);
+                            document.querySelector("#submit").click();
+                        }
+                    });
+                }).catch((err) => {
+                    window.clearInterval(it);
+                });
+            },3000);
+        });
     }
 })();

@@ -57,6 +57,7 @@ P.S.建立檔案也是一種編輯
 下方的自動測試指令能自動讀取範測並執行\
 但需要一些額外設定\
 首先，雙擊listener.pyw或listener.bat可開啟接收器\
+也可以用cpt auto init\
 發射部分需要瀏覽器能在開啟題目時\
 向"http://127.0.0.1:5555/writetestcase" 自動發指定格式的POST REQUEST\
 "http://127.0.0.1:5555/presenttestcase" 也是另一個選擇\
@@ -131,12 +132,14 @@ foldAZ則是以A~Z/0~9
 
 ### 自動測試
 以下的皆為"cpt auto"的子指令\
-1. test\
+1. init\
+開啟接收器
+2. test\
 自動全部執行過一遍並顯示完整數據
-2. judge\
+3. judge\
 自動全部執行過一遍並顯示評測結果\
 非嚴格檢查，但若答案不唯一建議用test再自己看
-3. submit
+4. submit
 提交目前程式碼
 
 ### 其他
