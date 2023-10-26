@@ -1,7 +1,7 @@
 import os
 import shutil
 
-import module
+import module.base
 
 imports = os.path.join(os.path.dirname(os.path.dirname(__file__)), "import")
 defines_prefix = ("#", "using", "const")

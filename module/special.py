@@ -3,7 +3,7 @@ import subprocess
 
 import pyzipper
 
-import module
+import module.base
 
 
 def mhc(target: str, argv: str) -> None:
@@ -66,7 +66,7 @@ def mhc(target: str, argv: str) -> None:
                 while True:
                     pwd = input("\nInput password:")
                     try:
-                        data = zip_file.read(choicefile, pwd.encode(module.encoding))
+                        data = zip_file.read(choicefile, pwd.encode("utf-8"))
                         break
                     except RuntimeError:
                         print("unzip faild")

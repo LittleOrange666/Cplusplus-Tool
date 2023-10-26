@@ -1,10 +1,8 @@
 import json
 import os
-import signal
 import subprocess
-from time import sleep
 
-import module
+import module.base
 import requests
 
 url = 'http://127.0.0.1:5555'
@@ -43,12 +41,12 @@ def auto(args: list[str]) -> None:
                         print(f"Answer #{i + 1}:")
                         print(v[1])
                         print(f"Output #{i + 1}:")
-                    outs, errs = proc.communicate(v[0].encode(encoding=module.encoding), timeout=tl)
+                    outs, errs = proc.communicate(v[0].encode(encoding="utf-8"), timeout=tl)
                     if testing:
-                        print(outs.decode(encoding=module.encoding), end="")
+                        print(outs.decode(encoding="utf-8"), end="")
                     else:
                         ans: list[str] = v[1].split("\n")
-                        out: list[str] = outs.decode(encoding=module.encoding).split("\n")
+                        out: list[str] = outs.decode(encoding="utf-8").split("\n")
                         while ans and not ans[-1]:
                             ans.pop()
                         while out and not out[-1]:
@@ -69,6 +67,8 @@ def auto(args: list[str]) -> None:
                                 ac += 1
                 except subprocess.TimeoutExpired:
                     print("Time Limit Exceed")
+                    proc.kill()
+                    proc.communicate()
             if testing:
                 print(f"\ntest completed")
             else:

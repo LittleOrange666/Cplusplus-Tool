@@ -1,6 +1,11 @@
 import os
+import subprocess
+from io import StringIO
 
 import module
+
+cptpath = os.path.join(os.path.expanduser("~"), ".cpt")
+eofflag = "\\eof"
 
 
 def system(s: str, timing: bool = False) -> int:
@@ -29,10 +34,9 @@ def getexename(filename: str) -> str:
     if filename.endswith(".cpp"):
         filename = filename[:-4]
     exefile = os.path.abspath(filename + ".exe")
-    if module.hidingexe:
-        exefile = os.path.join(module.cptpath, exefile.replace("\\", "_"))
-        if not os.path.isdir(os.path.dirname(exefile)):
-            os.makedirs(os.path.dirname(exefile))
+    exefile = os.path.join(cptpath, exefile.replace("\\", "_"))
+    if not os.path.isdir(os.path.dirname(exefile)):
+        os.makedirs(os.path.dirname(exefile))
     return exefile
 
 
@@ -77,26 +81,23 @@ def runwithfile(file: str, infile: str | None = None, outfile: str | None = None
         return
     exefile = getexename(file)
     if infile is None:
-        print(f"please input some content and ends with {module.eofflag}:")
-        infile = module.tmpf()
+        print(f"please input some content and ends with {eofflag}:")
         lines = []
         while True:
             s = input()
-            if s == module.eofflag:
+            if s == eofflag:
                 break
             lines.append(s)
-        with open(infile, "w", encoding=module.encoding) as f:
-            f.writelines(lines)
-    isstdout = outfile is None
-    if isstdout:
-        outfile = module.tmpf()
+        in_stream = StringIO("\n".join(lines) + "\n")
+    else:
+        in_stream = open(infile, "r", encoding="utf-8")
+    out_stream = None
+    if outfile is not None:
+        out_stream = open(outfile, "w", encoding="utf-8")
     print(f"start runnning {os.path.abspath(file)}.cpp")
-    errorcode = system(f'"{exefile}" < {infile} > {outfile}')
-    if isstdout:
-        with open(outfile, encoding=module.encoding) as f:
-            print(f.read())
-    print(f"program exited with Code {errorcode}")
-    module.tmpr()
+    proc = subprocess.Popen([exefile], stdin=in_stream, stdout=out_stream)
+    proc.wait()
+    print(f"program exited with Code {proc.returncode}")
 
 
 def solve(args: list[str]) -> bool:
