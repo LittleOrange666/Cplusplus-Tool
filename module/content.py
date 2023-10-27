@@ -11,6 +11,7 @@ def doimport(target, name):
     source_file = os.path.join(imports, name + ".cpp")
     if not os.path.isfile(source_file):
         print(f"Library name {name!r} does not exist")
+        print("valid libraries: "+", ".join(s[:-4] for s in os.listdir(imports) if s.endswith(".cpp")))
         return
     with open(target, "r") as f:
         source = f.read().split("\n")

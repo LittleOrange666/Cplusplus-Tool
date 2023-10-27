@@ -22,7 +22,7 @@ def auto(args: list[str]) -> None:
             try:
                 response = requests.get(url + "/readtestcase", timeout=1)
             except requests.exceptions.Timeout:
-                print("Cannot connect to listener")
+                print("Cannot connect to listener, you may use 'cpt auto init' to open it")
                 return
             data = json.loads(response.text)
             print(f"start testing '{os.path.abspath(target)}' with {data['Title']!r}")
@@ -79,11 +79,17 @@ def auto(args: list[str]) -> None:
                 return
             with open(target, "r") as f:
                 content = f.read()
-            response = requests.post(url + "/submit", {"content": content}, timeout=1)
-            if response.status_code == 200:
-                print(f"Submit Success for {response.text!r}")
-            else:
-                print(f"Submit Failed: error {response.status_code}")
+            try:
+                response = requests.post(url + "/submit", {"content": content}, timeout=1)
+                if response.status_code == 200:
+                    obj = response.json()
+                    print(f"Submited for {obj['title']!r}")
+                    if not obj['cansubmit']:
+                        print(f"Warning: {obj['title']!r} may not support submission")
+                else:
+                    print(f"Submit Failed: error {response.status_code}")
+            except requests.exceptions.Timeout:
+                print("Cannot connect to listener, you may use 'cpt auto init' to open it")
         case "init":
             print("try to init listener")
             target = os.path.join(os.path.dirname(os.path.dirname(__file__)), "listener.py")

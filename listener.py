@@ -8,7 +8,7 @@ from flask_cors import cross_origin
 
 app = Flask(__name__, template_folder="./")
 
-testcase = {"Title": "Nothing", "Data": [], "TimeLimit": 1.0}
+testcase = {"Title": "Nothing", "Data": [], "TimeLimit": 1.0, "Cansubmit": False}
 submission = ""
 
 
@@ -21,7 +21,7 @@ def get_test():
 @app.route('/writetestcase', methods=['POST'])
 @cross_origin()
 def write_testcase():
-    global testcase
+    global testcase, submission
     if "title" not in request.form:
         return Response("argument missing: title", status=400)
     if "data" not in request.form:
@@ -38,13 +38,15 @@ def write_testcase():
     testcase["Title"] = request.form["title"]
     testcase["TimeLimit"] = float(request.form["timelimit"])
     testcase["Data"] = data
+    testcase["Cansubmit"] = "cansubmit" in request.form
+    submission = ""
     return Response(status=200)
 
 
 @app.route('/presenttestcase', methods=['POST'])
 @cross_origin()
 def present_testcase():
-    global testcase
+    global testcase, submission
     if "title" not in request.form:
         return Response("argument missing: title", status=400)
     if "type" not in request.form:
@@ -84,6 +86,8 @@ def present_testcase():
     testcase["Title"] = request.form["title"]
     testcase["TimeLimit"] = float(request.form["timelimit"])
     testcase["Data"] = data
+    testcase["Cansubmit"] = "cansubmit" in request.form
+    submission = ""
     return Response(status=200)
 
 
@@ -102,7 +106,7 @@ def input_testcase():
 def submit():
     global submission
     submission = request.form["content"]
-    return Response(testcase["Title"], status=200)
+    return jsonify({"title": testcase["Title"], "cansubmit": testcase["Cansubmit"]})
 
 
 @app.route('/waitsubmit', methods=['POST'])
