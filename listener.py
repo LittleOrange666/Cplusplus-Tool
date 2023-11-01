@@ -9,7 +9,8 @@ from flask_cors import cross_origin
 app = Flask(__name__, template_folder="./")
 
 testcase = {"Title": "Nothing", "Data": [], "TimeLimit": 1.0, "Cansubmit": False}
-submission = ""
+all_testcase = {}
+submissions = {}
 
 
 @app.route('/test', methods=['GET', 'POST'])
@@ -40,6 +41,7 @@ def write_testcase():
     testcase["Data"] = data
     testcase["Cansubmit"] = "cansubmit" in request.form
     submission = ""
+    all_testcase[testcase["Title"]] = testcase.copy()
     return Response(status=200)
 
 
@@ -88,13 +90,26 @@ def present_testcase():
     testcase["Data"] = data
     testcase["Cansubmit"] = "cansubmit" in request.form
     submission = ""
+    all_testcase[testcase["Title"]] = testcase.copy()
     return Response(status=200)
 
 
 @app.route('/readtestcase', methods=['GET', 'POST'])
 @cross_origin()
 def read_testcase():
-    return jsonify(**testcase)
+    ret = testcase
+    key = None
+    if request.method == 'POST':
+        if "key" in request.form:
+            key = request.form["key"]
+    else:
+        if "key" in request.args:
+            key = request.args.get("key")
+    if key is not None:
+        for k in all_testcase:
+            if key.lower() in k.lower():
+                ret = all_testcase[k]
+    return jsonify(**ret)
 
 
 @app.route('/inputtestcase', methods=['GET'])
@@ -104,9 +119,14 @@ def input_testcase():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    global submission
-    submission = request.form["content"]
-    return jsonify({"title": testcase["Title"], "cansubmit": testcase["Cansubmit"]})
+    target = testcase
+    if "key" in request.form:
+        key = request.form["key"]
+        for k in all_testcase:
+            if key.lower() in k.lower():
+                target = all_testcase[k]
+    submissions[target["Title"]] = request.form["content"]
+    return jsonify({"title": target["Title"], "cansubmit": target["Cansubmit"]})
 
 
 @app.route('/waitsubmit', methods=['POST'])
@@ -115,9 +135,8 @@ def waitsubmit():
     global submission
     if "title" not in request.form:
         return Response("argument missing: title", status=400)
-    if request.form["title"] == testcase["Title"]:
-        ret = Response(submission, status=200)
-        submission = ""
+    if request.form["title"] in submissions:
+        ret = Response(submissions.pop(request.form["title"]), status=200)
         ret.mimetype = "text/plain"
         return ret
     return Response(status=204)

@@ -17,10 +17,11 @@ def auto(args: list[str]) -> None:
                 return
             sus = module.base.docompile(target, False)
             exefile = module.base.getexename(target)
+            key = os.path.basename(target)[:-4]
             if not sus:
                 return
             try:
-                response = requests.get(url + "/readtestcase", timeout=1)
+                response = requests.get(url + "/readtestcase", {"key": key}, timeout=1)
             except requests.exceptions.Timeout:
                 print("Cannot connect to listener, you may use 'cpt auto init' to open it")
                 return
@@ -73,6 +74,10 @@ def auto(args: list[str]) -> None:
                 print(f"\ntest completed")
             else:
                 print(f"\ntest completed, {ac}/{len(tests)} Accepted")
+                if 0 < ac == len(tests):
+                    r = input("All Accepted, do you want to submit? (y/[n])")
+                    if r.lower() == "y":
+                        os.system("cpt auto submit")
         case "submit":
             target = module.base.newest()
             if target is None:
@@ -80,7 +85,8 @@ def auto(args: list[str]) -> None:
             with open(target, "r") as f:
                 content = f.read()
             try:
-                response = requests.post(url + "/submit", {"content": content}, timeout=1)
+                key = os.path.basename(target)[:-4]
+                response = requests.post(url + "/submit", {"content": content, "key": key}, timeout=1)
                 if response.status_code == 200:
                     obj = response.json()
                     print(f"Submited for {obj['title']!r}")
