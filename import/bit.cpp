@@ -13,4 +13,7 @@ struct BIT{
         for(;i>0;i-=i&-i) r += a[i];
         return r;
     }
+    ll get(ll l, ll r){
+        return get(r)-get(l-1);
+    }
 };

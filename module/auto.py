@@ -40,7 +40,7 @@ def auto(args: list[str]) -> None:
                         print(f"Input #{i + 1}:")
                         print(v[0])
                         print(f"Answer #{i + 1}:")
-                        print(v[1])
+                        print(v[1] + ("" if v[1].endswith("\n") else "\n"))
                         print(f"Output #{i + 1}:")
                     outs, errs = proc.communicate(v[0].encode(encoding="utf-8"), timeout=tl)
                     if testing:
@@ -48,9 +48,9 @@ def auto(args: list[str]) -> None:
                     else:
                         ans: list[str] = v[1].split("\n")
                         out: list[str] = outs.decode(encoding="utf-8").split("\n")
-                        while ans and not ans[-1]:
+                        while ans and not ans[-1].strip():
                             ans.pop()
-                        while out and not out[-1]:
+                        while out and not out[-1].strip():
                             out.pop()
                         if len(ans) > len(out):
                             print(f"Wrong Answer: Output too short, required {len(ans)} lines, got {len(out)} lines")
@@ -60,8 +60,22 @@ def auto(args: list[str]) -> None:
                             for j in range(len(ans)):
                                 ans[j] = ans[j].strip()
                                 out[j] = out[j].strip()
-                                if ans[j].split() != out[j].split():
-                                    print(f"Wrong Answer in Line {j + 1}: expected {ans[j]!r}, got {out[j]!r}")
+                                L0 = ans[j].split()
+                                L1 = out[j].split()
+                                if L0 != L1:
+                                    if max(len(ans[j]), len(out[j])) < 100:
+                                        print(f"Wrong Answer in Line {j + 1}: expected {ans[j]!r}, got {out[j]!r}")
+                                    else:
+                                        idx = next(i for i in range(len(L0)) if L0[i] != L1[i])
+                                        th = (["th", "st", "nd", "rd"]+["th"]*6)[(i+1)%10]
+                                        if (idx+1)%100//10 == 1:
+                                            th = "th"
+                                        print(f"Wrong Answer at {idx+1}{th} token in Line {j + 1} : expected {L0[idx]!r}, got {L1[idx]!r}")
+                                        cnt = 0
+                                        while cnt < idx and idx+cnt+1<len(L0) and idx+cnt+1<len(L1) and len(" ".join(L0[idx-cnt-1:idx+cnt+2])) < 100:
+                                            cnt += 1
+                                        print(f"output: {'... ' if idx>cnt else ''}{' '.join(L1[idx-cnt:idx+cnt+1])}{' ...' if idx+cnt+1<len(L1) else ''}")
+                                        print(f"answer: {'... ' if idx>cnt else ''}{' '.join(L0[idx-cnt:idx+cnt+1])}{' ...' if idx+cnt+1<len(L0) else ''}")
                                     break
                             else:
                                 print("Accepted")
@@ -70,12 +84,13 @@ def auto(args: list[str]) -> None:
                     print("Time Limit Exceed")
                     proc.kill()
                     proc.communicate()
+                    print(f"Stopped with code {proc.returncode}")
             if testing:
                 print(f"\ntest completed")
             else:
                 print(f"\ntest completed, {ac}/{len(tests)} Accepted")
                 if 0 < ac == len(tests):
-                    r = input("All Accepted, do you want to submit? (y/[n])")
+                    r = input("All Accepted, do you want to submit? (y/[n]): ")
                     if r.lower() == "y":
                         os.system("cpt auto submit")
         case "submit":
