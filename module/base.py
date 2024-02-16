@@ -83,7 +83,6 @@ def docompile(cmd: str, dorun: bool = True, force: bool = False, gdb: bool = Fal
                 for line in err.split("\n"):
                     if "error" in line:
                         print(line) 
-                # subprocess.run(compile_cmd)
             print("compile faild")
             return False
         else:
