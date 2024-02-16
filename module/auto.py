@@ -42,10 +42,18 @@ def auto(args: list[str]) -> None:
                         print(f"Answer #{i + 1}:")
                         print(v[1] + ("" if v[1].endswith("\n") else "\n"))
                         print(f"Output #{i + 1}:")
-                    outs, errs = proc.communicate(v[0].encode(encoding="utf-8"), timeout=tl)
+                    outs, errs = proc.communicate(v[0].encode(encoding="utf-8"), timeout=tl+5)
+                    exitcode = proc.returncode
+                    if exitcode>=2147483648:
+                        exitcode -= 2147483648
                     if testing:
                         print(outs.decode(encoding="utf-8"), end="")
+                        if exitcode:
+                            print(f"Exited with code {exitcode}")
                     else:
+                        if exitcode:
+                            print(f"Runtime Error: Exited with code {exitcode}")
+                            continue
                         ans: list[str] = v[1].split("\n")
                         out: list[str] = outs.decode(encoding="utf-8").split("\n")
                         while ans and not ans[-1].strip():

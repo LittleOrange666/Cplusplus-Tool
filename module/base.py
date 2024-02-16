@@ -63,11 +63,26 @@ def docompile(cmd: str, dorun: bool = True, force: bool = False, gdb: bool = Fal
         if proc.returncode:
             err = proc.stderr.decode("utf8")
             key = cppfile+":"
+            ok = False
+            outs = {}
             for line in err.split("\n"):
-                if line.startswith(key):
-                    check = re.match("(\\d+):(\\d+): error: (.*)", line[len(key):])
+                if line.startswith(key) or True:
+                    check = re.match("([A-Z]:[^\\:]*):(\\d+):(\\d+): error: (.*)", line)
                     if check is not None:
-                        print(f"{Fore.RED}Error{Fore.RESET} at line {Fore.YELLOW}{check.group(1)}{Fore.RESET}: {check.group(3)}")
+                        ok = True
+                        s = f"{Fore.RED}Error{Fore.RESET} at line {Fore.YELLOW}{check.group(2)}{Fore.RESET}: {check.group(4)}"
+                        if check.group(1) not in outs:
+                            outs[check.group(1)] = [s]
+                        else:
+                            outs[check.group(1)].append(s)
+            for k,v in outs.items():
+                print(f"errors in {k}:")
+                for s in v:
+                    print(s)
+            if not ok:
+                for line in err.split("\n"):
+                    if "error" in line:
+                        print(line) 
             print("compile faild")
             return False
         else:
