@@ -22,14 +22,14 @@ struct RSQ{
         a.add(i,v);
         b.add(i,v*(i-1));
     }
-    ll query(ll i){
-        return a.query(i)*i-b.query(i);
+    ll get(ll i){
+        return a.get(i)*i-b.get(i);
     }
     void add(ll l,ll r, ll v){
         add(l,v);
         add(r+1,-v);
     }
-    ll query(ll l,ll r){
-        return query(r)-query(l-1);
+    ll get(ll l,ll r){
+        return get(r)-get(l-1);
     }
 };

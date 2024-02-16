@@ -1,0 +1,1 @@
+g++ cpt.cpp -o cpt.exe
