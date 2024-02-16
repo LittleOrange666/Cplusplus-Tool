@@ -1,6 +1,8 @@
 import os
 import sys
 
+import colorama
+
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "module"))
 
 import module
@@ -38,6 +40,7 @@ def cmds(args: list[str]):
 
 if __name__ == '__main__':
     cmd = " ".join(sys.argv[1:])
+    colorama.init()
     if cmd:
         try:
             cmds(cmd.split())

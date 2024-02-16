@@ -83,6 +83,18 @@ def present_testcase():
             pairs.sort(key=lambda x: x[0].filename)
             for a, b in pairs:
                 data.append([zip_file.read(a).decode("utf8"), zip_file.read(b).decode("utf8")])
+        case "text":
+            if "links" not in request.form:
+                return Response("argument missing: link", status=400)
+            links = json.loads(request.form["links"])
+            if not type(links) is list:
+                return Response("data format invalid", status=400)
+            for o in links:
+                if not (type(o) is list and len(o) == 2 and type(o[0]) is str and type(o[1]) is str):
+                    return Response("data format invalid", status=400)
+            for o in links:
+                pair = [requests.get(link, allow_redirects=True).content.decode("utf8") for link in o]
+                data.append(pair)
         case _:
             return Response("data type invalid", status=400)
     testcase["Title"] = request.form["title"]
@@ -105,9 +117,10 @@ def read_testcase():
     else:
         if "key" in request.args:
             key = request.args.get("key")
+    key = None
     if key is not None:
         for k in all_testcase:
-            if key.lower() in k.lower():
+            if key in k:
                 ret = all_testcase[k]
     return jsonify(**ret)
 
@@ -123,8 +136,8 @@ def submit():
     if "key" in request.form:
         key = request.form["key"]
         for k in all_testcase:
-            if key.lower() in k.lower():
-                target = all_testcase[k]
+            if key in k:
+                pass  # target = all_testcase[k]
     submissions[target["Title"]] = request.form["content"]
     return jsonify({"title": target["Title"], "cansubmit": target["Cansubmit"]})
 

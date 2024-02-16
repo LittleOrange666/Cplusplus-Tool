@@ -1,6 +1,8 @@
 import os
+import re
 import subprocess
 from io import StringIO
+from colorama import Fore
 
 import module
 
@@ -56,8 +58,32 @@ def docompile(cmd: str, dorun: bool = True, force: bool = False, gdb: bool = Fal
         return False
     if not os.path.isfile(exefile) or os.path.getmtime(exefile) < os.path.getmtime(cppfile) or force:
         print(f"start compiling {cmd}.cpp in C++{cpp_version}")
-        system(f'g++ -g "{cppfile}" -o "{exefile}" -std=c++{cpp_version} {module.config.constant_argv} {argv}')
-        if not os.path.isfile(exefile) or os.path.getmtime(exefile) < os.path.getmtime(cppfile):
+        compile_cmd = f'g++ -g "{cppfile}" -o "{exefile}" -std=c++{cpp_version} {module.config.constant_argv} {argv}'
+        proc = subprocess.run(compile_cmd, capture_output=True)
+        if proc.returncode:
+            err = proc.stderr.decode("utf8")
+            key = cppfile+":"
+            ok = False
+            outs = {}
+            for line in err.split("\n"):
+                if line.startswith(key) or True:
+                    check = re.match("([A-Z]:[^\\:]*):(\\d+):(\\d+): error: (.*)", line)
+                    if check is not None:
+                        ok = True
+                        s = f"{Fore.RED}Error{Fore.RESET} at line {Fore.YELLOW}{check.group(2)}{Fore.RESET}: {check.group(4)}"
+                        if check.group(1) not in outs:
+                            outs[check.group(1)] = [s]
+                        else:
+                            outs[check.group(1)].append(s)
+            for k,v in outs.items():
+                print(f"errors in {k}:")
+                for s in v:
+                    print(s)
+            if not ok:
+                for line in err.split("\n"):
+                    if "error" in line:
+                        print(line) 
+                # subprocess.run(compile_cmd)
             print("compile faild")
             return False
         else:
@@ -138,7 +164,7 @@ def solve(args: list[str]) -> bool:
         case "gdb":
             target = newest()
             if target is not None:
-                docompile(target, gdb=True)
+                docompile(target, force=True, gdb=True)
         case _:
             return False
     return True

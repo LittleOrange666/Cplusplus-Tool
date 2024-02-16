@@ -1,3 +1,4 @@
 pyzipper
 requests
 flask
+flask_cors
