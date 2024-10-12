@@ -3,6 +3,7 @@ import re
 import subprocess
 from io import StringIO
 from colorama import Fore
+import uuid
 
 import module
 
@@ -35,8 +36,8 @@ def newest() -> str | None:
 def getexename(filename: str) -> str:
     if filename.endswith(".cpp"):
         filename = filename[:-4]
-    exefile = os.path.abspath(filename + ".exe")
-    exefile = os.path.join(cptpath, exefile.replace("\\", "_"))
+    exefile = os.path.abspath(filename)
+    exefile = os.path.join(cptpath, uuid.uuid5(uuid.NAMESPACE_DNS, exefile).hex + ".exe")
     if not os.path.isdir(os.path.dirname(exefile)):
         os.makedirs(os.path.dirname(exefile))
     return exefile
@@ -59,9 +60,9 @@ def docompile(cmd: str, dorun: bool = True, force: bool = False, gdb: bool = Fal
     if not os.path.isfile(exefile) or os.path.getmtime(exefile) < os.path.getmtime(cppfile) or force:
         print(f"start compiling {cmd}.cpp in C++{cpp_version}")
         compile_cmd = f'g++ -g "{cppfile}" -o "{exefile}" -std=c++{cpp_version} {module.config.constant_argv} {argv}'
-        proc = subprocess.run(compile_cmd, capture_output=True)
+        proc = subprocess.run(compile_cmd, capture_output=True, shell=True)
         if proc.returncode:
-            err = proc.stderr.decode("utf8")
+            err = proc.stderr.decode()
             key = cppfile+":"
             ok = False
             outs = {}
@@ -153,7 +154,10 @@ def solve(args: list[str]) -> bool:
                 if len(args) >= 3:
                     runwithfile(target[:-4], args[1], args[2])
         case "run":
-            target = newest()
+            if len(args) >= 2:
+                target = args[1]
+            else:
+                target = newest()
             if target is not None:
                 docompile(target)
         case "rt":

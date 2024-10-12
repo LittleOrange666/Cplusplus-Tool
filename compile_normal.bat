@@ -1,1 +1,1 @@
-g++ cpt_wsl.cpp -o cpt.exe
+g++ cpt.cpp -o cpt.exe

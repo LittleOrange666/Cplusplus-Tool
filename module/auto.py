@@ -4,8 +4,11 @@ import subprocess
 
 import module.base
 import requests
-
-url = 'http://127.0.0.1:5555'
+import platform
+local_ip = "127.0.0.1"
+if "WSL" in platform.release():
+    local_ip = subprocess.run("ip route show | grep -i default | awk '{ print $3}'",shell=True,capture_output=True).stdout.decode().strip()
+url = f'http://{local_ip}:5555'
 
 
 def auto(args: list[str]) -> None:
