@@ -2,3 +2,5 @@ pyzipper
 requests
 flask
 flask_cors
+colorama
+Flask-Cors

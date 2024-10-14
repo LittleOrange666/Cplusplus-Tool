@@ -6,16 +6,21 @@ import colorama
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "module"))
 
 import module
+from module import target_type
+
 cpp_versions = {"11": "11", "14": "14", "17": "17", "20": "2a"}
 os.environ["PYTHONUTF8"] = "1"
 
 
 def cmds(args: list[str]):
     if len(args) == 0:
-        print(f"Unknow command {args[0]!r}")
+        print(f"Arguments missing")
         return
     match args[0]:
         case "v":
+            if target_type != "CPP":
+                print(f"not supported in {target_type} mode")
+                return True
             if len(args) == 1:
                 print(f"Current C++ version is C++{module.config.cpp_version}")
             else:
@@ -25,6 +30,9 @@ def cmds(args: list[str]):
                 else:
                     print(f"invalid C++ version {args[1]!r}")
         case "argv" | "args":
+            if target_type != "CPP":
+                print(f"not supported in {target_type} mode")
+                return True
             if len(args) == 1:
                 print(f"Current compile arguments is {module.config.constant_argv!r}")
             else:
@@ -46,3 +54,5 @@ if __name__ == '__main__':
             cmds(cmd.split())
         except KeyboardInterrupt:
             pass
+    else:
+        print(f"Arguments missing")

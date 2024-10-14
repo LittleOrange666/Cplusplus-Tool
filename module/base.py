@@ -1,11 +1,13 @@
 import os
 import re
 import subprocess
-from io import StringIO
-from colorama import Fore
 import uuid
+from io import StringIO
+
+from colorama import Fore
 
 import module
+from module import target_ext, target_type
 
 cptpath = os.path.join(os.path.expanduser("~"), ".cpt")
 eofflag = "\\eof"
@@ -25,7 +27,7 @@ def newest() -> str | None:
     for dirPath, dirNames, fileNames in os.walk(os.getcwd()):
         for f in fileNames:
             file = os.path.join(dirPath, f)
-            if file.endswith(".cpp") and (target is None or os.path.getmtime(file) > os.path.getmtime(target)):
+            if file.endswith(target_ext) and (target is None or os.path.getmtime(file) > os.path.getmtime(target)):
                 target = file
     if target is None:
         print(f"no cpp file here")
@@ -34,8 +36,8 @@ def newest() -> str | None:
 
 
 def getexename(filename: str) -> str:
-    if filename.endswith(".cpp"):
-        filename = filename[:-4]
+    if filename.endswith(target_ext):
+        filename = filename[:-len(target_ext)]
     exefile = os.path.abspath(filename)
     exefile = os.path.join(cptpath, uuid.uuid5(uuid.NAMESPACE_DNS, exefile).hex + ".exe")
     if not os.path.isdir(os.path.dirname(exefile)):
@@ -50,46 +52,62 @@ def docompile(cmd: str, dorun: bool = True, force: bool = False, gdb: bool = Fal
     if possible_args and " " in cmd:
         argv = cmd[cmd.find(" ") + 1:]
         cmd = cmd[:cmd.find(" ")]
-    if cmd.endswith(".cpp"):
-        cmd = cmd[:-4]
-    cppfile = os.path.abspath(cmd + ".cpp")
+    if cmd.endswith(target_ext):
+        cmd = cmd[:-len(target_ext)]
+    cppfile = os.path.abspath(cmd + target_ext)
     exefile = getexename(cmd)
     if not os.path.isfile(cppfile):
         print(f"file {cppfile!r} not existed")
         return False
     if not os.path.isfile(exefile) or os.path.getmtime(exefile) < os.path.getmtime(cppfile) or force:
-        print(f"start compiling {cmd}.cpp in C++{cpp_version}")
-        compile_cmd = f'g++ -g "{cppfile}" -o "{exefile}" -std=c++{cpp_version} {module.config.constant_argv} {argv}'
+        if target_type == "CPP":
+            print(f"start compiling {cmd}{target_ext} in C++{cpp_version}")
+            compile_cmd = f'g++ -g "{cppfile}" -o "{exefile}" -std=c++{cpp_version} {module.config.constant_argv} {argv}'
+        elif target_type == "RUST":
+            compile_cmd = f'rustc "{cppfile}" -o "{exefile}"'
+        else:
+            print("unknown target type")
+            return False
         proc = subprocess.run(compile_cmd, capture_output=True, shell=True)
         if proc.returncode:
             err = proc.stderr.decode()
-            key = cppfile+":"
-            ok = False
-            outs = {}
-            for line in err.split("\n"):
-                if line.startswith(key) or True:
-                    check = re.match("([A-Z]:[^\\:]*):(\\d+):(\\d+): error: (.*)", line)
-                    if check is not None:
-                        ok = True
-                        s = f"{Fore.RED}Error{Fore.RESET} at line {Fore.YELLOW}{check.group(2)}{Fore.RESET}: {check.group(4)}"
-                        if check.group(1) not in outs:
-                            outs[check.group(1)] = [s]
-                        else:
-                            outs[check.group(1)].append(s)
-            for k,v in outs.items():
-                print(f"errors in {k}:")
-                for s in v:
-                    print(s)
-            if not ok:
+            if target_type == "CPP":
+                key = cppfile + ":"
+                ok = False
+                outs = {}
                 for line in err.split("\n"):
-                    if "error" in line:
-                        print(line) 
+                    if line.startswith(key) or True:
+                        check = re.match("([A-Z]:[^:]*):(\\d+):(\\d+): error: (.*)", line)
+                        if check is not None:
+                            ok = True
+                            s = f"{Fore.RED}Error{Fore.RESET} at line {Fore.YELLOW}{check.group(2)}{Fore.RESET}: {check.group(4)}"
+                            if check.group(1) not in outs:
+                                outs[check.group(1)] = [s]
+                            else:
+                                outs[check.group(1)].append(s)
+                for k, v in outs.items():
+                    print(f"errors in {k}:")
+                    for s in v:
+                        print(s)
+                if not ok:
+                    for line in err.split("\n"):
+                        if "error" in line:
+                            print(line)
+            elif target_type == "RUST":
+                lines = err.split("\n")
+                for i in range(len(lines)-1):
+                    if "error" in lines[i] and cppfile in lines[i+1]:
+                        print(lines[i])
+                        print(lines[i+3])
+                        print(lines[i+4])
+            else:
+                print(err)
             print("compile faild")
             return False
         else:
             print("compile success")
     if dorun:
-        print(f"start runnning {cmd}.cpp")
+        print(f"start runnning {cmd}{target_ext}")
         oldpath = os.getcwd()
         os.chdir(os.path.dirname(cppfile))
         if gdb:
@@ -120,7 +138,7 @@ def runwithfile(file: str, infile: str | None = None, outfile: str | None = None
     out_stream = None
     if outfile is not None:
         out_stream = open(outfile, "w", encoding="utf-8")
-    print(f"start runnning {os.path.abspath(file)}.cpp")
+    print(f"start runnning {os.path.abspath(file)}{target_ext}")
     proc = subprocess.Popen([exefile], stdin=in_stream, stdout=out_stream)
     proc.wait()
     print(f"program exited with Code {proc.returncode}")
@@ -148,11 +166,11 @@ def solve(args: list[str]) -> bool:
             target = newest()
             if target is not None:
                 if len(args) == 1:
-                    runwithfile(target[:-4])
+                    runwithfile(target[:-len(target_ext)])
                 if len(args) == 2:
-                    runwithfile(target[:-4], args[1])
+                    runwithfile(target[:-len(target_ext)], args[1])
                 if len(args) >= 3:
-                    runwithfile(target[:-4], args[1], args[2])
+                    runwithfile(target[:-len(target_ext)], args[1], args[2])
         case "run":
             if len(args) >= 2:
                 target = args[1]
@@ -165,6 +183,9 @@ def solve(args: list[str]) -> bool:
             if target is not None:
                 docompile(target, timing=True)
         case "gdb":
+            if target_type != "CPP":
+                print(f"not supported in {target_type} mode")
+                return True
             target = newest()
             if target is not None:
                 docompile(target, force=True, gdb=True)

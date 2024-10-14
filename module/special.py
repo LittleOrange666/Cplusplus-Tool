@@ -29,7 +29,7 @@ def mhc(target: str, argv: str) -> None:
     send_data = None
     if targetfile is None:
         files = os.listdir(targetfolder)
-        files = [f for f in files if os.path.isfile(os.path.join(targetfolder,f)) and not f.endswith(".cpp")]
+        files = [f for f in files if os.path.isfile(os.path.join(targetfolder, f)) and not f.endswith(".cpp")]
         for i, f in enumerate(files):
             iszip = pyzipper.is_zipfile(os.path.join(targetfolder, f))
             print(f"{i + 1}.{'(zipfile)' if iszip else ''}{f}")

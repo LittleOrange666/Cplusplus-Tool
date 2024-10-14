@@ -1,6 +1,20 @@
 import json
 import os
 
+target_type = os.environ.get("CPT_TARGET", "CPP")
+target_type_info = {
+    "CPP": {
+        "ext": ".cpp"
+    },
+    "RUST": {
+        "ext": ".rs"
+    }
+}
+if target_type not in target_type_info:
+    print("Unknown target type:", target_type)
+    exit(1)
+target_ext = target_type_info[target_type]["ext"]
+
 
 class JsonConfig:
     def __init__(self, filename):

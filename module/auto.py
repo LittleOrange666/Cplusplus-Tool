@@ -2,12 +2,14 @@ import json
 import os
 import subprocess
 
-import module.base
 import requests
-import platform
+
+import module.base
+from module import target_ext
+
 local_ip = "127.0.0.1"
-if "WSL" in platform.release():
-    local_ip = subprocess.run("ip route show | grep -i default | awk '{ print $3}'",shell=True,capture_output=True).stdout.decode().strip()
+# if "WSL" in platform.release(): local_ip = subprocess.run("ip route show | grep -i default | awk '{ print $3}'",
+# shell=True,capture_output=True).stdout.decode().strip()
 url = f'http://{local_ip}:5555'
 
 
@@ -20,7 +22,7 @@ def auto(args: list[str]) -> None:
                 return
             sus = module.base.docompile(target, False)
             exefile = module.base.getexename(target)
-            key = os.path.basename(target)[:-4]
+            key = os.path.basename(target)[:len(target_ext)]
             if not sus:
                 return
             try:
@@ -45,9 +47,9 @@ def auto(args: list[str]) -> None:
                         print(f"Answer #{i + 1}:")
                         print(v[1] + ("" if v[1].endswith("\n") else "\n"))
                         print(f"Output #{i + 1}:")
-                    outs, errs = proc.communicate(v[0].encode(encoding="utf-8"), timeout=tl+5)
+                    outs, errs = proc.communicate(v[0].encode(encoding="utf-8"), timeout=tl + 5)
                     exitcode = proc.returncode
-                    if exitcode>=2147483648:
+                    if exitcode >= 2147483648:
                         exitcode -= 2147483648
                     if testing:
                         print(outs.decode(encoding="utf-8"), end="")
@@ -78,15 +80,19 @@ def auto(args: list[str]) -> None:
                                         print(f"Wrong Answer in Line {j + 1}: expected {ans[j]!r}, got {out[j]!r}")
                                     else:
                                         idx = next(i for i in range(len(L0)) if L0[i] != L1[i])
-                                        th = (["th", "st", "nd", "rd"]+["th"]*6)[(i+1)%10]
-                                        if (idx+1)%100//10 == 1:
+                                        th = (["th", "st", "nd", "rd"] + ["th"] * 6)[(i + 1) % 10]
+                                        if (idx + 1) % 100 // 10 == 1:
                                             th = "th"
-                                        print(f"Wrong Answer at {idx+1}{th} token in Line {j + 1} : expected {L0[idx]!r}, got {L1[idx]!r}")
+                                        print(
+                                            f"Wrong Answer at {idx + 1}{th} token in Line {j + 1} : expected {L0[idx]!r}, got {L1[idx]!r}")
                                         cnt = 0
-                                        while cnt < idx and idx+cnt+1<len(L0) and idx+cnt+1<len(L1) and len(" ".join(L0[idx-cnt-1:idx+cnt+2])) < 100:
+                                        while cnt < idx and idx + cnt + 1 < len(L0) and idx + cnt + 1 < len(L1) and len(
+                                                " ".join(L0[idx - cnt - 1:idx + cnt + 2])) < 100:
                                             cnt += 1
-                                        print(f"output: {'... ' if idx>cnt else ''}{' '.join(L1[idx-cnt:idx+cnt+1])}{' ...' if idx+cnt+1<len(L1) else ''}")
-                                        print(f"answer: {'... ' if idx>cnt else ''}{' '.join(L0[idx-cnt:idx+cnt+1])}{' ...' if idx+cnt+1<len(L0) else ''}")
+                                        print(
+                                            f"output: {'... ' if idx > cnt else ''}{' '.join(L1[idx - cnt:idx + cnt + 1])}{' ...' if idx + cnt + 1 < len(L1) else ''}")
+                                        print(
+                                            f"answer: {'... ' if idx > cnt else ''}{' '.join(L0[idx - cnt:idx + cnt + 1])}{' ...' if idx + cnt + 1 < len(L0) else ''}")
                                     break
                             else:
                                 print("Accepted")
@@ -111,7 +117,7 @@ def auto(args: list[str]) -> None:
             with open(target, "r") as f:
                 content = f.read()
             try:
-                key = os.path.basename(target)[:-4]
+                key = os.path.basename(target)[:-len(target_ext)]
                 response = requests.post(url + "/submit", {"content": content, "key": key}, timeout=1)
                 if response.status_code == 200:
                     obj = response.json()

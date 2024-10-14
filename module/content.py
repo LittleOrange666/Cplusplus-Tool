@@ -2,16 +2,17 @@ import os
 import shutil
 
 import module.base
+from module import target_ext, target_type
 
 imports = os.path.join(os.path.dirname(os.path.dirname(__file__)), "import")
 defines_prefix = ("#", "using", "const")
 
 
 def doimport(target, name):
-    source_file = os.path.join(imports, name + ".cpp")
+    source_file = os.path.join(imports, name + target_ext)
     if not os.path.isfile(source_file):
         print(f"Library name {name!r} does not exist")
-        print("valid libraries: "+", ".join(s[:-4] for s in os.listdir(imports) if s.endswith(".cpp")))
+        print("valid libraries: " + ", ".join(s[:-len(target_ext)] for s in os.listdir(imports) if s.endswith(target_ext)))
         return
     with open(target, "r") as f:
         source = f.read().split("\n")
@@ -35,6 +36,9 @@ def doimport(target, name):
 def solve(args: list[str]) -> bool:
     match args[0]:
         case "format":
+            if target_type != "CPP":
+                print(f"not supported in {target_type} mode")
+                return True
             if len(args) == 1:
                 target = module.base.newest()
             else:
@@ -57,17 +61,20 @@ def solve(args: list[str]) -> bool:
                 target = module.base.newest()
             else:
                 target = args[1]
-            if not target.endswith(".cpp"):
-                target += ".cpp"
+            if not target.endswith(target_ext):
+                target += target_ext
             if os.path.isfile(target) and os.path.getsize(target) > 0:
                 print(f"{target!r} is not a empty file")
             else:
-                with open(os.path.join(os.path.dirname(__file__), "template.cpp")) as f:
+                with open(os.path.join(os.path.dirname(__file__), f"template{target_ext}")) as f:
                     template_content = f.read()
                 with open(target, "w") as f:
                     f.write(template_content)
                     print(f"writed template to {target!r}")
         case "usaco":
+            if target_type != "CPP":
+                print(f"not supported in {target_type} mode")
+                return True
             if len(args) == 1:
                 print("argument missing")
                 return True
