@@ -37,7 +37,7 @@ P.S.建立檔案也是一種編輯
 ### 安裝
 
 下載zip或直接git clone就好\
-推薦git clone\
+推薦git clone --depth=1\
 然後裝好依賴項\
 並把安裝目錄放進PATH就可以了
 
