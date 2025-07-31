@@ -125,9 +125,9 @@ def read_testcase():
     return jsonify(**ret)
 
 
-@app.route('/inputtestcase', methods=['GET'])
-def input_testcase():
-    return render_template('input_testcase.html')
+# @app.route('/inputtestcase', methods=['GET'])
+# def input_testcase():
+#     return render_template('input_testcase.html')
 
 
 @app.route('/submit', methods=['POST'])
@@ -160,6 +160,6 @@ if __name__ == '__main__':
         responce = requests.get('http://127.0.0.1:5555/test', timeout=1)
         print("server is running")
         exit(0)
-    except requests.exceptions.Timeout:
+    except Exception:
         pass
-    app.run(port=5555)
+    app.run("0.0.0.0", port=5555)
