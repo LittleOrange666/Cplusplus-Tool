@@ -37,7 +37,7 @@ def auto(args: list[str]) -> None:
             ac = 0
             for i, v in enumerate(tests):
                 print(f"\nstart testing for testcase #{i + 1}")
-                proc = subprocess.Popen([exefile], stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+                proc = subprocess.Popen([exefile], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                 try:
                     if not v[0].endswith("\n"):
                         v[0] += "\n"

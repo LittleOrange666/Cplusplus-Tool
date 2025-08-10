@@ -63,14 +63,14 @@ def solve(args: list[str]) -> bool:
                 target = args[1]
             if not target.endswith(target_ext):
                 target += target_ext
-            if os.path.isfile(target) and os.path.getsize(target) > 0:
-                print(f"{target!r} is not a empty file")
-            else:
-                with open(os.path.join(os.path.dirname(__file__), f"template{target_ext}")) as f:
-                    template_content = f.read()
-                with open(target, "w") as f:
-                    f.write(template_content)
-                    print(f"writed template to {target!r}")
+            not_empty = os.path.isfile(target) and os.path.getsize(target) > 0
+            with open(os.path.join(os.path.dirname(__file__), f"template{target_ext}")) as f:
+                template_content = f.read()
+            with open(target, "a") as f:
+                if not_empty:
+                    f.write("\n")
+                f.write(template_content)
+                print(f"writed template to {target!r}")
         case "usaco":
             if target_type != "CPP":
                 print(f"not supported in {target_type} mode")
